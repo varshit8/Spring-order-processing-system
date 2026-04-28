@@ -1,0 +1,51 @@
+{
+  "feature_order": [
+    "age",
+    "bmi",
+    "glucose",
+    "blood_pressure"
+  ],
+  "feature_stats": {
+    "mean": {
+      "age": 43.0,
+      "bmi": 29.4,
+      "glucose": 136.416667,
+      "blood_pressure": 87.833333
+    },
+    "std": {
+      "age": 11.568636,
+      "bmi": 4.782433,
+      "glucose": 32.643168,
+      "blood_pressure": 11.760338
+    }
+  },
+  "weights": [
+    2.666138,
+    3.392895,
+    4.030361,
+    3.719903
+  ],
+  "bias": -2.699499,
+  "classification_threshold": 0.5,
+  "model_version": "diabetes-risk-logreg-v1",
+  "training_data_path": "data/training/diabetes_risk_training_data.json",
+  "data_split": {
+    "train_record_count": 12,
+    "eval_record_count": 4,
+    "eval_ratio": 0.25
+  },
+  "train_metrics": {
+    "record_count": 12,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "positive_rate": 0.4167
+  },
+  "eval_metrics": {
+    "record_count": 4,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "positive_rate": 1.0
+  }
+}

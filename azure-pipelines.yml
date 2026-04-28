@@ -1,0 +1,73 @@
+trigger:
+- main
+
+pr:
+- main
+
+schedules:
+- cron: "0 12 * * *"
+  displayName: Daily scheduled validation
+  branches:
+    include:
+    - main
+  always: true
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  pythonVersion: '3.9'
+  validationReport: 'reports/latest_validation_report.json'
+  validationSummary: 'reports/latest_validation_summary.md'
+  validationEnvironment: 'qa'
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(pythonVersion)'
+
+- script: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: Install dependencies
+
+- script: python -m scripts.train_model
+  displayName: Train versioned model artifact
+
+- script: python -m pytest
+  displayName: Run API validation tests
+
+- script: |
+    python -m scripts.generate_validation_report \
+      --environment dev \
+      --output $(validationReport) \
+      --summary-output $(validationSummary) \
+      --mode pr \
+  displayName: Generate PR validation report
+  condition: eq(variables['Build.Reason'], 'PullRequest')
+
+- script: |
+    python -m scripts.generate_validation_report \
+      --environment prod \
+      --output $(validationReport) \
+      --summary-output $(validationSummary) \
+      --mode scheduled
+  displayName: Generate scheduled validation report
+  condition: eq(variables['Build.Reason'], 'Schedule')
+
+- script: |
+    python -m scripts.generate_validation_report \
+      --environment $(validationEnvironment) \
+      --output $(validationReport) \
+      --summary-output $(validationSummary) \
+      --mode manual
+  displayName: Generate manual validation report
+  condition: and(ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.Reason'], 'Schedule'))
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: 'reports'
+    artifact: 'validation-reports'
+    publishLocation: 'pipeline'
+  displayName: Publish validation artifacts
+  condition: always()

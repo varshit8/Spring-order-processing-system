@@ -1,0 +1,38 @@
+[
+  {
+    "age": 29,
+    "bmi": 22.4,
+    "glucose": 98,
+    "blood_pressure": 74
+  },
+  {
+    "age": 34,
+    "bmi": 24.1,
+    "glucose": 105,
+    "blood_pressure": 78
+  },
+  {
+    "age": 41,
+    "bmi": 26.8,
+    "glucose": 118,
+    "blood_pressure": 82
+  },
+  {
+    "age": 47,
+    "bmi": 28.7,
+    "glucose": 132,
+    "blood_pressure": 86
+  },
+  {
+    "age": 53,
+    "bmi": 30.4,
+    "glucose": 146,
+    "blood_pressure": 92
+  },
+  {
+    "age": 61,
+    "bmi": 33.2,
+    "glucose": 168,
+    "blood_pressure": 98
+  }
+]

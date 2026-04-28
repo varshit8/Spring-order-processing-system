@@ -1,0 +1,62 @@
+[
+  {
+    "name": "low-risk-baseline",
+    "request": {
+      "age": 25,
+      "bmi": 21.5,
+      "glucose": 95,
+      "blood_pressure": 72
+    },
+    "expected_response": {
+      "risk_score": 0.0,
+      "prediction": "low_risk",
+      "model_version": "diabetes-risk-logreg-v1",
+      "validation_status": "passed"
+    }
+  },
+  {
+    "name": "borderline-risk",
+    "request": {
+      "age": 52,
+      "bmi": 31.2,
+      "glucose": 155,
+      "blood_pressure": 96
+    },
+    "expected_response": {
+      "risk_score": 0.996,
+      "prediction": "high_risk",
+      "model_version": "diabetes-risk-logreg-v1",
+      "validation_status": "passed"
+    }
+  },
+  {
+    "name": "high-risk-elevated",
+    "request": {
+      "age": 68,
+      "bmi": 36.8,
+      "glucose": 240,
+      "blood_pressure": 110
+    },
+    "expected_response": {
+      "risk_score": 1.0,
+      "prediction": "high_risk",
+      "model_version": "diabetes-risk-logreg-v1",
+      "validation_status": "passed"
+    }
+  },
+  {
+    "name": "critical-risk",
+    "request": {
+      "age": 79,
+      "bmi": 42.5,
+      "glucose": 360,
+      "blood_pressure": 145
+    },
+    "expected_response": {
+      "risk_score": 1.0,
+      "prediction": "high_risk",
+      "model_version": "diabetes-risk-logreg-v1",
+      "validation_status": "passed"
+    }
+  }
+]

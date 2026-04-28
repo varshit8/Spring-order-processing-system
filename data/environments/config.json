@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "reference": "data/reference/baseline_inputs.json",
+    "candidate": "data/environments/dev/candidate_inputs.json",
+    "fail_on_drift": true,
+    "max_drifted_features": 0
+  },
+  "qa": {
+    "reference": "data/reference/baseline_inputs.json",
+    "candidate": "data/environments/qa/candidate_inputs.json",
+    "fail_on_drift": true,
+    "max_drifted_features": 1
+  },
+  "prod": {
+    "reference": "data/reference/baseline_inputs.json",
+    "candidate": "data/environments/prod/candidate_inputs.json",
+    "fail_on_drift": true,
+    "max_drifted_features": 1
+  }
+}
