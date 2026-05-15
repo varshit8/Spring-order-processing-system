@@ -1,0 +1,108 @@
+version: '3.9'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:8.1.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 2181:2181
+
+  kafka:
+    image: confluentinc/cp-kafka:8.1.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - 9092:9092
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: orders
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  mongodb:
+    image: mongo:7
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    image: redis:7
+    ports:
+      - 6379:6379
+
+  order-service:
+    build:
+      context: .
+      dockerfile: order-service/Dockerfile
+    depends_on:
+      - kafka
+      - postgres
+    ports:
+      - 8081:8081
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
+    depends_on:
+      - kafka
+      - postgres
+    ports:
+      - 8082:8082
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+  inventory-service:
+    build:
+      context: .
+      dockerfile: inventory-service/Dockerfile
+    depends_on:
+      - kafka
+      - redis
+    ports:
+      - 8083:8083
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    depends_on:
+      - kafka
+    ports:
+      - 8084:8084
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+  analytics-service:
+    build:
+      context: .
+      dockerfile: analytics-service/Dockerfile
+    depends_on:
+      - kafka
+      - mongodb
+    ports:
+      - 8085:8085
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+volumes:
+  postgres-data:
+  mongo-data:
