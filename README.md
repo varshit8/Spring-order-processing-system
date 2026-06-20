@@ -2,6 +2,35 @@
 
 This project is a starter implementation of an ML inference API with built-in validation and automated tests.
 
+## AI RAG project concept
+
+This repository now also includes planning documentation for an AI-integrated full-stack project idea using Python, Angular, Azure OpenAI, and Retrieval-Augmented Generation.
+
+- [Problem statement](docs/AI_RAG_PROBLEM_STATEMENT.md)
+- [Architecture outline](docs/AI_RAG_ARCHITECTURE.md)
+- [Project outline and resume framing](docs/AI_RAG_PROJECT_OUTLINE.md)
+
+## AI RAG MVP endpoints
+
+The backend includes a local, dependency-light RAG MVP that can be replaced later with Azure OpenAI embeddings and Azure AI Search.
+
+- `POST /documents`: index a text document from JSON content
+- `GET /documents`: list indexed documents
+- `POST /search`: retrieve relevant document chunks with citations
+- `POST /chat`: answer a question using retrieved document context
+- `POST /agents/summarize`: summarize an indexed document
+- `POST /agents/extract-actions`: extract likely action items from an indexed document
+
+Example document indexing request:
+
+```json
+{
+  "filename": "requirements.md",
+  "source_type": "requirements",
+  "content": "The application must support document upload. The backend team should validate file size and content type."
+}
+```
+
 ## What is included
 
 - FastAPI service for model inference

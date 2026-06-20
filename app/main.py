@@ -5,13 +5,26 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 
 from app.model import MODEL_VERSION, classify_prediction, score_prediction
-from app.schemas import PredictionRequest, PredictionResponse
+from app.rag import build_grounded_answer, extract_action_items, rag_store, summarize_document
+from app.schemas import (
+    AgentRequest,
+    AgentResponse,
+    ChatRequest,
+    ChatResponse,
+    DocumentIngestRequest,
+    DocumentIngestResponse,
+    DocumentSummary,
+    PredictionRequest,
+    PredictionResponse,
+    SearchRequest,
+    SearchResponse,
+)
 from app.validation import evaluate_validation_report, generate_validation_report, load_records
 
 app = FastAPI(
-    title="ML Service Validation Platform",
+    title="ML Validation and AI Knowledge Assistant Platform",
     version="0.1.0",
-    description="Starter ML inference API with validation-friendly endpoints.",
+    description="Starter ML validation API with local RAG knowledge assistant endpoints.",
 )
 
 ENVIRONMENT_CONFIG_PATH = Path("data/environments/config.json")
@@ -330,4 +343,80 @@ def predict(payload: PredictionRequest) -> PredictionResponse:
         prediction=prediction,
         model_version=MODEL_VERSION,
         validation_status="passed",
+    )
+
+
+@app.post("/documents", response_model=DocumentIngestResponse)
+def ingest_document(payload: DocumentIngestRequest) -> DocumentIngestResponse:
+    document = rag_store.ingest(
+        filename=payload.filename,
+        content=payload.content,
+        source_type=payload.source_type,
+    )
+    return DocumentIngestResponse(
+        document_id=document.document_id,
+        filename=document.filename,
+        chunk_count=len(document.chunk_ids),
+        status="indexed",
+    )
+
+
+@app.get("/documents", response_model=list[DocumentSummary])
+def list_documents() -> list[DocumentSummary]:
+    return [
+        DocumentSummary(
+            document_id=document.document_id,
+            filename=document.filename,
+            source_type=document.source_type,
+            chunk_count=len(document.chunk_ids),
+        )
+        for document in rag_store.list_documents()
+    ]
+
+
+@app.post("/search", response_model=SearchResponse)
+def search_documents(payload: SearchRequest) -> SearchResponse:
+    citations = rag_store.search(payload.query, top_k=payload.top_k)
+    return SearchResponse(query=payload.query, citations=citations)
+
+
+@app.post("/chat", response_model=ChatResponse)
+def chat_with_documents(payload: ChatRequest) -> ChatResponse:
+    citations = rag_store.search(payload.question, top_k=payload.top_k)
+    return ChatResponse(
+        answer=build_grounded_answer(payload.question, citations),
+        citations=citations,
+        retrieval_mode="local_keyword_rag",
+    )
+
+
+@app.post("/agents/summarize", response_model=AgentResponse)
+def summarize_document_agent(payload: AgentRequest) -> AgentResponse:
+    document = rag_store.get_document(payload.document_id)
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    citations = rag_store.search(document.filename, top_k=1, document_id=document.document_id)
+    if not citations and document.chunk_ids:
+        first_chunk = rag_store.chunks[document.chunk_ids[0]]
+        citations = rag_store.search(first_chunk.text, top_k=1, document_id=document.document_id)
+
+    return AgentResponse(
+        document_id=document.document_id,
+        result=summarize_document(document),
+        citations=citations,
+    )
+
+
+@app.post("/agents/extract-actions", response_model=AgentResponse)
+def extract_actions_agent(payload: AgentRequest) -> AgentResponse:
+    document = rag_store.get_document(payload.document_id)
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    citations = rag_store.search("must should required action owner todo", top_k=3, document_id=document.document_id)
+    return AgentResponse(
+        document_id=document.document_id,
+        result=extract_action_items(document),
+        citations=citations,
     )
