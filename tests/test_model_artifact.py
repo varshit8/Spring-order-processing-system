@@ -17,9 +17,24 @@ def test_model_artifact_version_matches_runtime_version() -> None:
     assert artifact["data_split"]["eval_record_count"] > 0
 
 
+def test_model_artifact_metric_counts_match_data_split() -> None:
+    artifact = load_model_artifact()
+
+    assert artifact["train_metrics"]["record_count"] == artifact["data_split"]["train_record_count"]
+    assert artifact["eval_metrics"]["record_count"] == artifact["data_split"]["eval_record_count"]
+
+
 def test_model_artifact_contains_expected_features() -> None:
     artifact = json.loads(Path(DEFAULT_MODEL_PATH).read_text(encoding="utf-8"))
 
     assert artifact["feature_order"] == ["age", "bmi", "glucose", "blood_pressure"]
     assert set(artifact["feature_stats"]["mean"]) == {"age", "bmi", "glucose", "blood_pressure"}
     assert "accuracy" in artifact["eval_metrics"]
+
+
+def test_model_artifact_contains_expected1_features() -> None:
+    artifact = load_model_artifact()
+    expected_features = {"age", "bmi", "glucose", "blood_pressure"}
+
+    assert set(artifact["feature_stats"]["std"]) == expected_features
+    assert len(artifact["weights"]) == len(artifact["feature_order"])
